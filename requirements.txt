@@ -1,0 +1,26 @@
+# Web framework
+flask==2.3.3
+flask-cors==4.0.0
+werkzeug==2.3.7
+gunicorn==21.2.0
+
+# HTTP
+requests==2.31.0
+
+# Torch stack (Python 3.12 compatible)
+torch==2.3.1
+torchvision==0.18.1
+torchaudio==2.3.1
+
+# HuggingFace ecosystem
+transformers==4.46.2
+tokenizers==0.20.3
+huggingface-hub==0.25.2
+safetensors==0.4.5
+
+# Image & CV
+pillow==11.0.0
+opencv-python==4.10.0.84
+
+# Core math
+numpy==1.26.4
