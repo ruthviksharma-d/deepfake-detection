@@ -1,0 +1,72 @@
+{
+  "manifest_version": 3,
+  "name": "DeepFake Shield Pro",
+  "version": "2.0.0",
+  "description": "Advanced AI-powered deepfake detection for video calls and streaming",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "notifications",
+    "storage"
+  ],
+  "host_permissions": [
+    "http://127.0.0.1:5000/*",
+    "http://localhost:5000/*",
+    "*://*.zoom.us/*",
+    "*://meet.google.com/*",
+    "*://*.teams.microsoft.com/*",
+    "*://*.webex.com/*",
+    "*://www.youtube.com/*",
+    "*://*.twitch.tv/*",
+    "*://*.facebook.com/*",
+    "*://*.instagram.com/*",
+    "*://*.tiktok.com/*",
+    "*://*.discord.com/*",
+    "*://*.skype.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "DeepFake Shield Pro"
+  },
+
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.zoom.us/*",
+        "*://meet.google.com/*",
+        "*://*.teams.microsoft.com/*",
+        "*://*.webex.com/*",
+        "*://www.youtube.com/*",
+        "*://*.twitch.tv/*",
+        "*://*.facebook.com/*",
+        "*://*.instagram.com/*",
+        "*://*.tiktok.com/*",
+        "*://*.discord.com/*",
+        "*://*.skype.com/*"
+      ],
+      "js": ["contentScript.js"],
+      "css": ["overlay.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "icons/*.png",
+        "models/*"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "commands": {
+    "toggle-monitoring": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+D"
+      },
+      "description": "Toggle deepfake monitoring"
+    }
+  }
+}
