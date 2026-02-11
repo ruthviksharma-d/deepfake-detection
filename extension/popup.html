@@ -1,0 +1,212 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>DeepFake Shield</title>
+    <style>
+        body {
+            width: 280px;
+            height: 180px;
+            font-family: Arial, sans-serif;
+            background-color: #282c34;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+            margin: 0;
+        }
+
+        h1 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #61dafb;
+        }
+
+        .status {
+            margin: 15px 0;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .status.online {
+            background-color: rgba(46, 213, 115, 0.2);
+            color: #2ed573;
+        }
+
+        .status.offline {
+            background-color: rgba(255, 71, 87, 0.2);
+            color: #ff4757;
+        }
+
+        .stats {
+            font-size: 12px;
+            margin: 15px 0;
+            opacity: 0.8;
+        }
+
+        .stats div {
+            margin: 5px 0;
+        }
+
+        button {
+            background-color: #61dafb;
+            border: none;
+            color: #282c34;
+            padding: 8px 16px;
+            font-size: 12px;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #21a1f1;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .footer {
+            font-size: 10px;
+            opacity: 0.6;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🛡️ DeepFake Shield</h1>
+    
+    <div class="status" id="serverStatus">
+        Checking server...
+    </div>
+
+    <div class="stats">
+        <div>Analyses: <span id="totalAnalyses">0</span></div>
+        <div>Deepfakes found: <span id="deepfakesFound">0</span></div>
+    </div>
+
+    <div>
+        <button id="testConnection">Test Connection</button>
+        <button id="resetStats">Reset Stats</button>
+    </div>
+
+    <div class="footer">
+        Press Ctrl+Shift+D to toggle monitoring
+    </div>
+
+    <script>
+        let serverStatus = 'unknown';
+        
+        async function updateServerStatus() {
+            try {
+                const response = await chrome.runtime.sendMessage({
+                    action: 'getServerStatus'
+                });
+                
+                const statusElement = document.getElementById('serverStatus');
+                
+                if (response.status === 'online') {
+                    statusElement.textContent = '✅ Server Online';
+                    statusElement.className = 'status online';
+                    serverStatus = 'online';
+                } else {
+                    statusElement.textContent = '❌ Server Offline';
+                    statusElement.className = 'status offline';
+                    serverStatus = 'offline';
+                }
+            } catch (error) {
+                const statusElement = document.getElementById('serverStatus');
+                statusElement.textContent = '❓ Status Unknown';
+                statusElement.className = 'status offline';
+                serverStatus = 'unknown';
+            }
+        }
+
+        async function updateStats() {
+            try {
+                const stats = await chrome.runtime.sendMessage({
+                    action: 'getStatistics'
+                });
+                
+                document.getElementById('totalAnalyses').textContent = stats.totalAnalyses || 0;
+                document.getElementById('deepfakesFound').textContent = stats.deepfakesDetected || 0;
+            } catch (error) {
+                console.error('Failed to get statistics:', error);
+            }
+        }
+
+        async function testConnection() {
+            const button = document.getElementById('testConnection');
+            button.disabled = true;
+            button.textContent = 'Testing...';
+            
+            try {
+                const response = await chrome.runtime.sendMessage({
+                    action: 'checkServerStatus'
+                });
+                
+                if (response === 'online') {
+                    button.textContent = 'Success!';
+                    setTimeout(() => {
+                        button.textContent = 'Test Connection';
+                        button.disabled = false;
+                    }, 2000);
+                } else {
+                    button.textContent = 'Failed';
+                    setTimeout(() => {
+                        button.textContent = 'Test Connection';
+                        button.disabled = false;
+                    }, 2000);
+                }
+                
+                await updateServerStatus();
+            } catch (error) {
+                button.textContent = 'Error';
+                setTimeout(() => {
+                    button.textContent = 'Test Connection';
+                    button.disabled = false;
+                }, 2000);
+            }
+        }
+
+        async function resetStats() {
+            if (confirm('Reset all statistics?')) {
+                try {
+                    await chrome.runtime.sendMessage({ action: 'resetStatistics' });
+                    await updateStats();
+                    
+                    const button = document.getElementById('resetStats');
+                    button.textContent = 'Reset!';
+                    setTimeout(() => {
+                        button.textContent = 'Reset Stats';
+                    }, 1500);
+                } catch (error) {
+                    console.error('Failed to reset statistics:', error);
+                }
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            await updateServerStatus();
+            await updateStats();
+            
+            // Set up event listeners
+            document.getElementById('testConnection').addEventListener('click', testConnection);
+            document.getElementById('resetStats').addEventListener('click', resetStats);
+            
+            // Update every 5 seconds
+            setInterval(async () => {
+                await updateServerStatus();
+                await updateStats();
+            }, 5000);
+        });
+    </script>
+</body>
+</html>
